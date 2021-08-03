@@ -28,6 +28,9 @@ import com.tencent.polaris.api.exception.ErrorCode;
 import com.tencent.polaris.api.exception.PolarisException;
 import com.tencent.polaris.api.utils.MapUtils;
 import com.tencent.polaris.factory.util.ConfigUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -39,6 +42,8 @@ import java.util.ServiceLoader;
  * @date 2019/8/20
  */
 public class PluginConfigImpl implements PluginConfig {
+
+    private final Logger LOG = LoggerFactory.getLogger(PluginConfigImpl.class);
 
     @JsonProperty
     private final Map<String, Map<?, ?>> plugin = new HashMap<>();
@@ -127,8 +132,8 @@ public class PluginConfigImpl implements PluginConfig {
                 String pluginName = entry.getKey();
                 Class<? extends Verifier> clazz = PluginConfigImpl.pluginConfigClazz.get(pluginName);
                 if (null == clazz) {
-                    throw new PolarisException(ErrorCode.INVALID_CONFIG,
-                            String.format("unknown plugin config type for plugin %s", pluginName));
+                    LOG.warn("unknown plugin config type for plugin :{}", pluginName);
+                    continue;
                 }
                 try {
                     Verifier result = mapper.convertValue(properties, clazz);
@@ -159,7 +164,7 @@ public class PluginConfigImpl implements PluginConfig {
      * 设置特定插件配置
      *
      * @param pluginName 插件名
-     * @param config 插件配置对象
+     * @param config     插件配置对象
      * @throws PolarisException 设置过程出现的异常
      */
     public void setPluginConfig(String pluginName, Verifier config) throws PolarisException {
